@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 
 class GradientData {
   static final List<List<Color>> gradients = [
-    [Colors.pink, Colors.orange],
-    [Colors.red, Colors.lightBlue],
-    [Colors.deepOrange, Colors.amber],
-    [Colors.deepPurple, Colors.lightBlue],
+    [const Color.fromARGB(255, 243, 231, 124), Colors.purple],
+    [
+      const Color.fromARGB(255, 232, 34, 20),
+      const Color.fromARGB(255, 98, 29, 215)
+    ],
+    [const Color.fromARGB(255, 240, 59, 4), Colors.yellow],
+    [Colors.deepPurple, Colors.white],
   ];
 }

@@ -1,16 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:zen_quotes/gradient_container.dart';
 //screenshot workkk
 import 'package:screenshot/screenshot.dart';
-import 'dart:typed_data';
-
-import 'package:permission_handler/permission_handler.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'favorites_page.dart';
 
 class QuotesPage extends StatefulWidget {
   const QuotesPage({super.key});
@@ -25,18 +21,44 @@ class _QuotesPageState extends State<QuotesPage> {
   bool isLoading = true;
   final Random random = Random();
   ScreenshotController screenshotController = ScreenshotController();
+  /*Okay switching it to the Favourites tab and back i need smth to store the fav quotes
+  its either screenshots or txt/string data ->> use this logic>>>>>
+  */
+  List<String> favoriteQuotes = [];
+  /*void _navigateToFavorites() {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => FavoritesPage(favoriteQuotes: favoriteQuotes),
+        ));
+  }*/
+
+  final List<Widget> _pages = [
+    QuotesPage(),
+    FavoritesPage(),
+  ];
+
+  int _selectedPage = 0;
+
+  void _navigateToFavorites() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FavoritesPage(),
+      ),
+    );
+  }
+
+  void _onPageTapped(int pageNo) {
+    if (pageNo == 1) {
+      _navigateToFavorites();
+    }
+    ;
+  }
 
   bool isFavourite = false;
-  // Current gradient index
+  //current gradient index
   int currentGradientIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchQuote();
-    // Initialize with a random gradient
-    currentGradientIndex = random.nextInt(GradientData.gradients.length);
-  }
 
   Future<void> fetchQuote() async {
     setState(() {
@@ -73,6 +95,15 @@ class _QuotesPageState extends State<QuotesPage> {
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+    fetchQuote();
+    // Initialize with a random gradient
+    currentGradientIndex = random.nextInt(GradientData.gradients.length);
+  }
+
+/*
   Future<void> captureAndSaveScreenshot() async {
     final Uint8List? image = await screenshotController.capture();
     if (image == null) return;
@@ -92,7 +123,7 @@ class _QuotesPageState extends State<QuotesPage> {
       return true;
     }
     return false;
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -111,78 +142,54 @@ class _QuotesPageState extends State<QuotesPage> {
           ),
 
           // Main Content
-          Screenshot(
-            controller: screenshotController,
+          SafeArea(
             child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'ZEN QUOTES',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 2.0,
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-                    isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : Card(
-                            elevation: 5,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            color: Colors.white,
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                children: [
+              child: Column(
+                children: [
+                  isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Expanded(
+                          child: GestureDetector(
+                            onHorizontalDragEnd: (DragEndDetails details) {
+                              if (details.primaryVelocity! > 0) {
+                                fetchQuote();
+                              }
+                            },
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Quote text
+
+                                Text(
+                                  quote,
+                                  style: const TextStyle(
+                                    fontSize: 26,
+                                    height: 1.5,
+                                    color: Color.fromRGBO(255, 255, 255, .7),
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+
+                                // adds a small distance between the both quote and author
+                                const SizedBox(height: 20),
+
+                                // Author name
+                                if (author.isNotEmpty)
                                   Text(
-                                    quote,
+                                    "~ $author",
                                     style: const TextStyle(
                                       fontSize: 18,
-                                      height: 1.5,
-                                      fontStyle: FontStyle.italic,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color.fromRGBO(255, 255, 255, 0.7),
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
-                                  const SizedBox(height: 20),
-                                  if (author.isNotEmpty)
-                                    Text(
-                                      "— $author",
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      textAlign: TextAlign.right,
-                                    ),
-                                ],
-                              ),
+                              ],
                             ),
                           ),
-                    const SizedBox(height: 40),
-                    ElevatedButton.icon(
-                      onPressed: fetchQuote,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('New Quote'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                ],
               ),
             ),
           ),
@@ -198,8 +205,9 @@ class _QuotesPageState extends State<QuotesPage> {
                   IconButton(
                     icon: Icon(
                       Icons.favorite,
-                      color: isFavourite ? Colors.red : Colors.lightBlueAccent,
+                      color: isFavourite ? Colors.red : Colors.white,
                     ),
+                    iconSize: 35,
                     onPressed: () {
                       setState(() {
                         isFavourite = !isFavourite;
@@ -209,27 +217,50 @@ class _QuotesPageState extends State<QuotesPage> {
                   ),
                   const SizedBox(height: 20),
                   IconButton(
-                    icon:
-                        const Icon(Icons.share, color: Colors.lightBlueAccent),
+                    icon: const Icon(Icons.share, color: Colors.white),
+                    iconSize: 35,
                     onPressed: () {
                       // Handle share action
                     },
                   ),
                   const SizedBox(height: 20),
                   IconButton(
-                    icon: const Icon(Icons.download,
-                        color: Colors.lightBlueAccent),
+                    icon: const Icon(Icons.download, color: Colors.white),
+                    iconSize: 35,
                     onPressed: () {
                       // Handle download action
-                      captureAndSaveScreenshot();
                     },
                   ),
-                  const SizedBox(height: 40), //padding near the bottom
+                  const SizedBox(height: 100), //padding near the bottom
                 ],
               ),
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.only(top: 10), // Add padding above the bar
+        decoration: const BoxDecoration(
+          color: Colors.black, // Background color
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _selectedPage,
+          onTap: _onPageTapped,
+          backgroundColor: Colors.black, // Background color
+          selectedItemColor: Colors.white, // Active icon color
+          unselectedItemColor: Colors.grey,
+          // Inactive icon color
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.format_quote, size: 30),
+              label: "QUOTES",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite, size: 30),
+              label: "FAVORITES",
+            ),
+          ],
+        ),
       ),
     );
   }
