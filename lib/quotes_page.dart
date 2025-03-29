@@ -22,38 +22,19 @@ class _QuotesPageState extends State<QuotesPage> {
   final Random random = Random();
   ScreenshotController screenshotController = ScreenshotController();
   /*Okay switching it to the Favourites tab and back i need smth to store the fav quotes
-  its either screenshots or txt/string data ->> use this logic>>>>>
+  its either screenshots or txt/string data ->> use this
   */
-  List<String> favoriteQuotes = [];
-  /*void _navigateToFavorites() {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => FavoritesPage(favoriteQuotes: favoriteQuotes),
-        ));
-  }*/
+  List<String> favoriteQuotes = []; //fav quotes
 
   final List<Widget> _pages = [
     QuotesPage(),
     FavoritesPage(),
   ];
-
-  int _selectedPage = 0;
-
-  void _navigateToFavorites() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => FavoritesPage(),
-      ),
-    );
-  }
-
-  void _onPageTapped(int pageNo) {
-    if (pageNo == 1) {
-      _navigateToFavorites();
-    }
-    ;
+  int _selectedIndex = 0;
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   bool isFavourite = false;
@@ -127,129 +108,110 @@ class _QuotesPageState extends State<QuotesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Background with gradient
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: GradientData.gradients[currentGradientIndex],
+    return MaterialApp(
+      home: Scaffold(
+        body: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: GradientData.gradients[currentGradientIndex],
+                ),
               ),
             ),
-          ),
-
-          // Main Content
-          SafeArea(
-            child: Center(
-              child: Column(
-                children: [
-                  isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Expanded(
-                          child: GestureDetector(
-                            onHorizontalDragEnd: (DragEndDetails details) {
-                              if (details.primaryVelocity! > 0) {
-                                fetchQuote();
-                              }
-                            },
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                // Quote text
-
-                                Text(
-                                  quote,
-                                  style: const TextStyle(
-                                    fontSize: 26,
-                                    height: 1.5,
-                                    color: Color.fromRGBO(255, 255, 255, .7),
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-
-                                // adds a small distance between the both quote and author
-                                const SizedBox(height: 20),
-
-                                // Author name
-                                if (author.isNotEmpty)
+            SafeArea(
+              child: Center(
+                child: Column(
+                  children: [
+                    isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Expanded(
+                            child: GestureDetector(
+                              onHorizontalDragEnd: (DragEndDetails details) {
+                                if (details.primaryVelocity! > 0) {
+                                  fetchQuote();
+                                }
+                              },
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
                                   Text(
-                                    "~ $author",
+                                    quote,
                                     style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color.fromRGBO(255, 255, 255, 0.7),
+                                      fontSize: 26,
+                                      height: 1.5,
+                                      color: Color.fromRGBO(255, 255, 255, .7),
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
-                              ],
+                                  const SizedBox(height: 20),
+                                  if (author.isNotEmpty)
+                                    Text(
+                                      "~ $author",
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color:
+                                            Color.fromRGBO(255, 255, 255, 0.7),
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-
-          // Sidebar with icons
-          Align(
-            alignment: Alignment.bottomRight,
-            child: Container(
-              width: 60, // Sidebar width
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.favorite,
-                      color: isFavourite ? Colors.red : Colors.white,
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Container(
+                width: 60,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        Icons.favorite,
+                        color: isFavourite ? Colors.red : Colors.white,
+                      ),
+                      iconSize: 35,
+                      onPressed: () {
+                        setState(() {
+                          isFavourite = !isFavourite;
+                        });
+                      },
                     ),
-                    iconSize: 35,
-                    onPressed: () {
-                      setState(() {
-                        isFavourite = !isFavourite;
-                      });
-                      // Handle favorite action
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  IconButton(
-                    icon: const Icon(Icons.share, color: Colors.white),
-                    iconSize: 35,
-                    onPressed: () {
-                      // Handle share action
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  IconButton(
-                    icon: const Icon(Icons.download, color: Colors.white),
-                    iconSize: 35,
-                    onPressed: () {
-                      // Handle download action
-                    },
-                  ),
-                  const SizedBox(height: 100), //padding near the bottom
-                ],
+                    const SizedBox(height: 20),
+                    IconButton(
+                      icon: const Icon(Icons.share, color: Colors.white),
+                      iconSize: 35,
+                      onPressed: () {},
+                    ),
+                    const SizedBox(height: 20),
+                    IconButton(
+                      icon: const Icon(Icons.download, color: Colors.white),
+                      iconSize: 35,
+                      onPressed: () {},
+                    ),
+                    const SizedBox(height: 100),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.only(top: 10), // Add padding above the bar
-        decoration: const BoxDecoration(
-          color: Colors.black, // Background color
+          ],
         ),
-        child: BottomNavigationBar(
-          currentIndex: _selectedPage,
-          onTap: _onPageTapped,
-          backgroundColor: Colors.black, // Background color
-          selectedItemColor: Colors.white, // Active icon color
+        /*
+        bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Colors.black,
+          selectedItemColor: Colors.white,
           unselectedItemColor: Colors.grey,
-          // Inactive icon color
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.format_quote, size: 30),
@@ -261,6 +223,7 @@ class _QuotesPageState extends State<QuotesPage> {
             ),
           ],
         ),
+        */
       ),
     );
   }

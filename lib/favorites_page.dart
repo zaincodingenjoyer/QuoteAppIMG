@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
-//import 'quotes_page.dart'; // Import your Quotes page
+//import 'quotes_page.dart';
 
-class FavoritesPage extends StatelessWidget {
+class FavoritesPage extends StatefulWidget {
   const FavoritesPage({super.key});
 
   @override
+  State<FavoritesPage> createState() => _FavoritesPage();
+}
+
+class _FavoritesPage extends State<FavoritesPage> {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Favorite Quotes"),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
-    );
+        body: Stack(
+      children: [Text('FavouritesPage')],
+    ));
   }
 }
